@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { join } from 'path';
 import yaml from 'js-yaml';
 import type { PromptTemplate, TemplateVariables, ToolDefinition } from '../../entity/prompt/prompt-template.entity';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const promptsDir = join(__dirname, '../../data/prompts');
+const promptsDir = join(process.cwd(), 'dist/data/prompts');
 
 @Injectable()
 export class PromptService {

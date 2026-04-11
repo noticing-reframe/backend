@@ -1,13 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { join } from 'path';
 import type { Person } from '../../entity/person/person.entity';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const personsPath = join(__dirname, '../../data/persons.json');
+const personsPath = join(process.cwd(), 'dist/data/persons.json');
 const personsData: Person[] = JSON.parse(readFileSync(personsPath, 'utf-8'));
 
 @Injectable()
