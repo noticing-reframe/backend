@@ -25,6 +25,16 @@ async function bootstrap() {
 }
 
 export default async (req: Request, res: Response) => {
+  // CORS preflight 처리
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-LLM-API-Key, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   const instance = await bootstrap();
   instance(req, res);
 };
