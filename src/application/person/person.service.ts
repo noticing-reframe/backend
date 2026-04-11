@@ -41,6 +41,7 @@ export class PersonAppService {
           reason,
           conversation_hint: conversationHint,
           profile_image: person.profile_image,
+          tags: person.tags || [person.character_category],
         };
       })
     );

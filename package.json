@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/app.ts",
     "build": "tsup",
+    "postbuild": "mkdir -p dist/data/prompts && cp src/data/persons.json dist/data/ && cp src/data/prompts/*.yaml dist/data/prompts/",
     "start": "node dist/app.js",
     "lint": "eslint src --ext .ts",
     "test": "vitest"

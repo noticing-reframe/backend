@@ -62,7 +62,8 @@ X-LLM-API-Key: {LLM_API_KEY}
     "character_background": "...",
     "reason": "진로를 고민하는 당신에게, 여러 직업을 경험하며 자신만의 길을 찾은 루나의 이야기가 도움이 될 거예요.",
     "conversation_hint": "나도 처음엔 뭘 해야 할지 전혀 몰랐거든. 그냥 눈앞에 보이는 거 하나씩 해봤어. 그 얘기 해볼까?",
-    "profile_image": 1
+    "profile_image": 1,
+    "tags": ["진로", "성장", "도전"]
   },
   // ... 3-4명 더
 ]
