@@ -1,0 +1,69 @@
+name: character_generation
+
+input_schema:
+  type: object
+  properties:
+    user_worry:
+      type: string
+      description: The user's worry or concern
+    match_reason:
+      type: string
+      description: Why this character was recommended for this user
+    character_name:
+      type: string
+    character_tagline:
+      type: string
+    character_background:
+      type: string
+    character_tone:
+      type: string
+  required:
+    - user_worry
+    - match_reason
+    - character_name
+    - character_tagline
+    - character_background
+    - character_tone
+
+output_schema:
+  name: generate_character_detail
+  description: Generate a detail page for a selected character based on the user's worry and match context.
+  input_schema:
+    type: object
+    properties:
+      conversation_hint:
+        type: string
+        description: "Shown under the label '당신과 하고 싶은 대화'. 2-3 sentences in Korean. Explains why this character wants to talk with this specific user — written from the character's implied perspective, grounded in the match between the user's worry and the character's background. Should feel personal and specific, not generic. No direct advice."
+    required:
+      - conversation_hint
+
+system_prompt: |
+  You are generating content for Reframe, a perspective-broadening service where users have first-person conversations with characters who have lived very different lives.
+
+  Your task:
+  Given a user's worry and a selected character, generate a conversation_hint — the text shown under the label "당신과 하고 싶은 대화" on the character detail page.
+
+  This text should:
+  - Be written in Korean, 2-3 sentences
+  - Speak to what kind of conversation this character would want to have with this specific user, given their worry
+  - Be grounded in the character's actual background and the specific connection to the user's situation
+  - Feel like something the character would genuinely say or want — not a generic endorsement
+  - Avoid advice, solutions, or emotional reassurance — the character is offering a perspective, not a answer
+  - Be intriguing enough that the user wants to start the conversation
+
+  Do not explain your reasoning. Only call the tool once.
+
+user_message_template: |
+  User's worry:
+  {{user_worry}}
+
+  Why this character was recommended:
+  {{match_reason}}
+
+  Character:
+  Name: {{character_name}}
+  Tagline: {{character_tagline}}
+  Background: {{character_background}}
+  Tone: {{character_tone}}
+
+  Generate the conversation_hint for this character's detail page.

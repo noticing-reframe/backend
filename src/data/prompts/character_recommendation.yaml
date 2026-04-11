@@ -1,0 +1,92 @@
+name: character_recommendation
+
+input_schema:
+  type: object
+  properties:
+    user_worry:
+      type: string
+      description: The user's worry or concern they want to discuss
+    characters:
+      type: array
+      items:
+        type: object
+        properties:
+          character_name:
+            type: string
+          character_tagline:
+            type: string
+          character_background:
+            type: string
+          character_tone:
+            type: string
+          dialogue_example:
+            type: string
+        required:
+          - character_name
+          - character_tagline
+          - character_background
+          - character_tone
+          - dialogue_example
+  required:
+    - user_worry
+    - characters
+
+output_schema:
+  name: match_characters
+  description: Match characters to the user's worry and return ranked recommendations with reasons.
+  input_schema:
+    type: object
+    properties:
+      matched:
+        type: array
+        description: List of matched characters, ordered by relevance (best match first)
+        items:
+          type: object
+          properties:
+            index:
+              type: integer
+              description: 1-based index of the character in the input characters array
+            reason:
+              type: string
+              description: "Why this character fits the user's worry. 1-2 sentences, written in Korean, shown directly on the recommendation card."
+          required:
+            - index
+            - reason
+        minItems: 4
+        maxItems: 5
+    required:
+      - matched
+
+system_prompt: |
+  You are a character recommendation engine for Reframe, an AI service that helps users broaden their perspective by having conversations with diverse characters.
+
+  Your task:
+  Given a user's worry and a list of characters, select the 4-5 characters that would be most valuable for the user to talk with — not because they give advice, but because their lived perspective, background, or worldview offers a meaningful contrast or expansion to the user's current thinking.
+
+  Selection criteria:
+  - Prioritize characters whose background or life experience creates a productive tension or contrast with the user's situation
+  - Prefer characters who faced genuinely different constraints, values, or contexts — not just similar problems
+  - Avoid selecting characters only because they "went through the same thing" — the goal is perspective diversity, not emotional mirroring
+  - Order results by fit quality, best match first
+
+  Output format:
+  Call the match_characters tool. For each matched character, provide:
+  - index: the 1-based position of the character in the input array
+  - reason: 1-2 sentences in Korean explaining why this character's perspective would be worth exploring given the user's worry. This text appears directly on the recommendation card, so write it to be specific, honest, and intriguing — not generic encouragement.
+
+  Do not explain your reasoning outside the tool call. Only call the tool once.
+
+user_message_template: |
+  User's worry:
+  {{user_worry}}
+
+  Characters ({{n}} total):
+  {{#each characters}}
+  [{{index}}] {{character_name}}
+  Tagline: {{character_tagline}}
+  Background: {{character_background}}
+  Tone: {{character_tone}}
+  Dialogue example: {{dialogue_example}}
+
+  {{/each}}
+  Select 4-5 characters whose perspective would most expand this user's worldview.

@@ -1,50 +1,50 @@
-import { ClaudeModule } from '../../infrastructure/claude/claude.module.js';
-import { PersonRepository } from '../../domain/person/person.repository.js';
-import type { Message } from '../../infrastructure/claude/interface/claude.interface.js';
+import { Injectable, Inject } from '@nestjs/common';
+import { ClaudeService } from '../../infrastructure/claude/claude.service';
+import { PromptService } from '../../infrastructure/prompt/prompt.service';
+import { PersonService } from '../../domain/person/person.service';
+import { ConversationService } from '../../domain/conversation/conversation.service';
+import type { ChatMessage } from '../../entity/conversation/message.entity';
 
-interface ChatMessage {
-  role: 'user' | 'person';
-  text: string;
-}
-
-export class ChatService {
-  private claudeModule: ClaudeModule;
-  private personRepository: PersonRepository;
-
-  constructor() {
-    this.claudeModule = ClaudeModule.getInstance();
-    this.personRepository = new PersonRepository();
-  }
+@Injectable()
+export class ChatAppService {
+  constructor(
+    @Inject(ClaudeService) private readonly claudeService: ClaudeService,
+    @Inject(PromptService) private readonly promptService: PromptService,
+    @Inject(PersonService) private readonly personService: PersonService,
+    @Inject(ConversationService) private readonly conversationService: ConversationService
+  ) {}
 
   async streamChat(
     personId: string,
+    userWorry: string,
     chatMessages: ChatMessage[],
     onChunk: (text: string) => void
   ): Promise<void> {
-    const person = await this.personRepository.findById(personId);
+    const person = this.personService.findById(personId);
     if (!person) {
       throw new Error('Person not found');
     }
 
-    // ChatMessage를 Claude Message 형식으로 변환
-    const messages: Message[] = chatMessages.map((m) => ({
-      role: m.role === 'user' ? 'user' : 'assistant',
-      content: m.text,
-    }));
+    // background_story를 문자열로 변환
+    const backgroundStoryText = person.background_story
+      .map((item) => item.text)
+      .join('\n');
 
-    const systemPrompt = `${person.system_prompt}
+    // 시스템 프롬프트 렌더링 (userWorry는 컨텍스트로만 사용)
+    const systemPrompt = this.promptService.renderSystemPrompt('character_conversation', {
+      character_name: person.character_name,
+      character_tagline: person.character_tagline,
+      character_background: person.character_background,
+      character_tone: person.character_tone,
+      dialogue_example: person.dialogue_example,
+      background_story: backgroundStoryText,
+      user_worry: userWorry,
+    });
 
-배경 정보:
-${person.background_story}
+    // 프론트에서 보낸 메시지 그대로 사용
+    const messages = this.conversationService.toClaudeMessages(chatMessages);
 
-중요 지침:
-- 반드시 1인칭으로 대화하세요. ("나는...", "내가...")
-- 사용자의 고민에 공감하고, 자신의 경험을 바탕으로 조언해주세요.
-- 너무 길지 않게, 2-4문단 정도로 응답하세요.
-- 자연스럽고 따뜻한 어조를 유지하세요.
-- 학문적이거나 딱딱한 어조는 피하세요.`;
-
-    await this.claudeModule.client.createStreamCompletion({
+    await this.claudeService.createStreamCompletion({
       messages,
       system: systemPrompt,
       maxTokens: 1024,

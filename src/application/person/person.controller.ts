@@ -1,49 +1,27 @@
-import { Router, Request, Response } from 'express';
-import { PersonService } from './person.service.js';
+import { Controller, Post, Body, Headers, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import { PersonAppService } from './person.service';
 
+@Controller('persons')
 export class PersonController {
-  public router: Router;
-  private service: PersonService;
+  constructor(@Inject(PersonAppService) private readonly personAppService: PersonAppService) {}
 
-  constructor() {
-    this.router = Router();
-    this.service = new PersonService();
-    this.initializeRoutes();
-  }
-
-  private initializeRoutes(): void {
-    this.router.get('/', this.getAllPersons.bind(this));
-    this.router.get('/:id', this.getPersonById.bind(this));
-  }
-
-  private async getAllPersons(_req: Request, res: Response): Promise<void> {
-    try {
-      const persons = await this.service.getAllPersons();
-      // system_prompt와 background_story는 제외하고 반환
-      const publicPersons = persons.map(({ system_prompt, background_story, ...rest }) => rest);
-      res.json(publicPersons);
-    } catch (error) {
-      console.error('getAllPersons error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+  @Post('match')
+  async matchPersons(
+    @Headers('x-llm-api-key') llmApiKey: string,
+    @Body() body: { worryText: string }
+  ) {
+    // LLM API Key 검증
+    const serverLlmApiKey = process.env.LLM_API_KEY;
+    if (!serverLlmApiKey || llmApiKey !== serverLlmApiKey) {
+      throw new HttpException('Invalid LLM API Key', HttpStatus.UNAUTHORIZED);
     }
-  }
 
-  private async getPersonById(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const person = await this.service.getPersonById(id);
+    const { worryText } = body;
 
-      if (!person) {
-        res.status(404).json({ error: 'Person not found' });
-        return;
-      }
-
-      // system_prompt와 background_story는 제외하고 반환
-      const { system_prompt, background_story, ...publicPerson } = person;
-      res.json(publicPerson);
-    } catch (error) {
-      console.error('getPersonById error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    if (!worryText || typeof worryText !== 'string') {
+      throw new HttpException('worryText is required', HttpStatus.BAD_REQUEST);
     }
+
+    return this.personAppService.matchPersonsToWorry(worryText);
   }
 }
