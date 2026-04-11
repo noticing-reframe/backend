@@ -15,7 +15,7 @@ export interface Person {
   source_persona: string;
   reason: string;
   background_story: BackgroundStoryItem[];
-  profile_image: number;
+  profile_image: string;
   tags?: string[];
 }
 
@@ -26,6 +26,6 @@ export interface PersonMatch {
   character_background: string;
   reason: string;
   conversation_hint: string;
-  profile_image: number;
+  profile_image: string;
   tags: string[];
 }
