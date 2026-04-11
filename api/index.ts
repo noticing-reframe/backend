@@ -18,7 +18,7 @@ async function bootstrap() {
       allowedHeaders: ['Content-Type', 'X-LLM-API-Key', 'Authorization'],
       credentials: true,
     });
-    app.setGlobalPrefix('api');
+    // Vercel 라우트가 이미 /api/* 이므로 prefix 제거
     await app.init();
   }
   return server;
