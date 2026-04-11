@@ -44,7 +44,7 @@
       "음악",
       "꿈"
     ],
-    "profile_image": "디제이"
+    "profile_image": "dj"
   },
   {
     "character_id": "joongu_002",
@@ -91,7 +91,7 @@
       "덕질",
       "만화"
     ],
-    "profile_image": "만화가"
+    "profile_image": "cartoonist"
   },
   {
     "character_id": "lasseter_003",
@@ -134,7 +134,7 @@
       "애니메이션",
       "열정"
     ],
-    "profile_image": "영화 감독"
+    "profile_image": "director"
   },
   {
     "character_id": "farhan_004",
@@ -169,7 +169,7 @@
       "사진",
       "부모"
     ],
-    "profile_image": "사진 작가"
+    "profile_image": "photographer"
   },
   {
     "character_id": "leeyeon_005",
@@ -228,7 +228,7 @@
       "퇴사",
       "창작"
     ],
-    "profile_image": "글 작가"
+    "profile_image": "writer"
   },
   {
     "character_id": "zenitsu_006",
@@ -267,7 +267,7 @@
       "두려움",
       "결단"
     ],
-    "profile_image": "검사"
+    "profile_image": "prosecutor"
   },
   {
     "character_id": "jordan_001",
@@ -306,7 +306,7 @@
       "실패",
       "도전"
     ],
-    "profile_image": "농구 선수"
+    "profile_image": "basketball"
   },
   {
     "character_id": "rocklee_002",
@@ -345,7 +345,7 @@
       "노력",
       "한계"
     ],
-    "profile_image": "권투 선수"
+    "profile_image": "boxer"
   },
   {
     "character_id": "biles_003",
@@ -384,7 +384,7 @@
       "번아웃",
       "멘탈"
     ],
-    "profile_image": "발레 선수"
+    "profile_image": "ballet"
   },
   {
     "character_id": "kimgyeoul_004",
@@ -423,6 +423,6 @@
       "글쓰기",
       "의미"
     ],
-    "profile_image": "에세이 작가"
+    "profile_image": "essayist"
   }
 ]
