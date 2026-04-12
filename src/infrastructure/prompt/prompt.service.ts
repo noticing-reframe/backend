@@ -1,24 +1,47 @@
 import { Injectable } from '@nestjs/common';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, existsSync } from 'fs';
+import { join, isAbsolute } from 'path';
 import yaml from 'js-yaml';
 import type { PromptTemplate, TemplateVariables, ToolDefinition } from '../../entity/prompt/prompt-template.entity';
 
-const promptsDir = join(process.cwd(), 'dist/data/prompts');
+const defaultPromptsDir = join(process.cwd(), 'dist/data/prompts');
+
+function resolvePromptsDir(): { dir: string; useCache: boolean } {
+  const envDir = process.env.PROMPTS_DIR;
+  if (envDir) {
+    const resolved = isAbsolute(envDir) ? envDir : join(process.cwd(), envDir);
+    if (existsSync(resolved)) {
+      return { dir: resolved, useCache: false };
+    }
+    console.warn(`PROMPTS_DIR="${envDir}" not found, falling back to default`);
+  }
+  return { dir: defaultPromptsDir, useCache: true };
+}
 
 @Injectable()
 export class PromptService {
   private promptCache: Map<string, PromptTemplate> = new Map();
+  private promptsDir: string;
+  private useCache: boolean;
+
+  constructor() {
+    const { dir, useCache } = resolvePromptsDir();
+    this.promptsDir = dir;
+    this.useCache = useCache;
+    console.log(`[PromptService] Loading prompts from: ${this.promptsDir} (cache: ${this.useCache})`);
+  }
 
   loadPrompt(name: string): PromptTemplate {
-    if (this.promptCache.has(name)) {
+    if (this.useCache && this.promptCache.has(name)) {
       return this.promptCache.get(name)!;
     }
 
-    const filePath = join(promptsDir, `${name}.yaml`);
+    const filePath = join(this.promptsDir, `${name}.yaml`);
     const content = readFileSync(filePath, 'utf-8');
     const prompt = yaml.load(content) as PromptTemplate;
-    this.promptCache.set(name, prompt);
+    if (this.useCache) {
+      this.promptCache.set(name, prompt);
+    }
     return prompt;
   }
 

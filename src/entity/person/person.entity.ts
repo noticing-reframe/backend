@@ -25,7 +25,7 @@ export interface PersonMatch {
   character_tagline: string;
   character_background: string;
   reason: string;
-  conversation_hint: string;
+  conversation_hint: string[];
   profile_image: string;
   tags: string[];
 }

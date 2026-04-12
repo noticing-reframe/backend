@@ -91,7 +91,7 @@ export class PersonAppService {
     worryText: string,
     matchReason: string,
     person: Person
-  ): Promise<string> {
+  ): Promise<string[]> {
     const toolDef = this.promptService.getToolDefinition('character_generation');
     if (!toolDef) throw new Error('Tool definition not found');
 

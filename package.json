@@ -4,9 +4,9 @@
   "description": "Reframe Backend - Node.js + TypeScript with Clean Architecture",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "tsx watch src/app.ts",
+    "dev": "PROMPTS_DIR=./prompts tsx watch src/app.ts",
     "build": "tsup",
-    "postbuild": "mkdir -p dist/data/prompts && cp src/data/persons.json dist/data/ && cp src/data/prompts/*.yaml dist/data/prompts/",
+    "postbuild": "mkdir -p dist/data/prompts && cp src/data/persons.json dist/data/ && cp src/data/prompts/*.yaml dist/data/prompts/ && mkdir -p prompts && cp src/data/prompts/*.yaml prompts/",
     "start": "node dist/app.js",
     "lint": "eslint src --ext .ts",
     "test": "vitest"

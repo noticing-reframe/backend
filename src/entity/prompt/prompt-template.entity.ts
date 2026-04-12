@@ -28,5 +28,5 @@ export interface MatchCharactersResult {
 
 // Generate character detail tool output
 export interface GenerateCharacterDetailResult {
-  conversation_hint: string;
+  conversation_hint: string[];
 }

@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Person } from '../../entity/person/person.entity';
 
-const personsPath = join(process.cwd(), 'dist/data/persons.json');
+const personsPath = join(process.cwd(), 'src/data/persons.json');
 const personsData: Person[] = JSON.parse(readFileSync(personsPath, 'utf-8'));
 
 @Injectable()

@@ -22,6 +22,10 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 COPY src/data ./dist/data
 
+# Copy prompts to /app/prompts for volume mount override
+COPY prompts ./prompts
+ENV PROMPTS_DIR=/app/prompts
+
 EXPOSE 4000
 
 CMD ["node", "dist/app.js"]
