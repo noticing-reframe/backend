@@ -81,16 +81,20 @@ system_prompt: |
   Do not explain your reasoning outside the tool call. Only call the tool once.
 
 user_message_template: |
-  User's worry:
+  <user_worry>
   {{user_worry}}
+  </user_worry>
 
-  Characters ({{n}} total):
+  <characters count="{{n}}">
   {{#each characters}}
-  [{{index}}] {{character_name}}
-  Tagline: {{character_tagline}}
-  Background: {{character_background}}
-  Tone: {{character_tone}}
-  Dialogue example: {{dialogue_example}}
-
+  <character index="{{index}}">
+    <name>{{character_name}}</name>
+    <tagline>{{character_tagline}}</tagline>
+    <background>{{character_background}}</background>
+    <tone>{{character_tone}}</tone>
+    <dialogue_example>{{dialogue_example}}</dialogue_example>
+  </character>
   {{/each}}
+  </characters>
+
   Select 4-5 characters whose perspective would most expand this user's worldview.

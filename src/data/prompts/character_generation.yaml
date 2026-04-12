@@ -67,16 +67,19 @@ system_prompt: |
   Do not explain your reasoning. Only call the tool once.
 
 user_message_template: |
-  User's worry:
+  <user_worry>
   {{user_worry}}
+  </user_worry>
 
-  Why this character was recommended:
+  <match_reason>
   {{match_reason}}
+  </match_reason>
 
-  Character:
-  Name: {{character_name}}
-  Tagline: {{character_tagline}}
-  Background: {{character_background}}
-  Tone: {{character_tone}}
+  <character>
+    <name>{{character_name}}</name>
+    <tagline>{{character_tagline}}</tagline>
+    <background>{{character_background}}</background>
+    <tone>{{character_tone}}</tone>
+  </character>
 
   Generate the conversation_hint for this character's detail page.
