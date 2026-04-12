@@ -18,8 +18,9 @@ export interface TemplateVariables {
 
 // Match characters tool output
 export interface MatchedCharacter {
-  index: number;
   reason: string;
+  score: number;
+  index: number;
 }
 
 export interface MatchCharactersResult {

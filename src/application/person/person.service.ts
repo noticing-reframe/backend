@@ -29,7 +29,7 @@ export class PersonAppService {
 
     // Step 2: For each matched character, generate conversation_hint
     const results = await Promise.all(
-      matchedCharacters.map(async ({ index, reason }) => {
+      matchedCharacters.map(async ({ index, reason, score }) => {
         const person = allPersons[index - 1]; // Convert 1-based to 0-based index
         const conversationHint = await this.generateCharacterDetail(worryText, reason, person);
 
@@ -52,7 +52,7 @@ export class PersonAppService {
   private async recommendCharacters(
     worryText: string,
     persons: Person[]
-  ): Promise<{ index: number; reason: string }[]> {
+  ): Promise<{ index: number; reason: string; score: number }[]> {
     const toolDef = this.promptService.getToolDefinition('character_recommendation');
     if (!toolDef) throw new Error('Tool definition not found');
 
@@ -84,7 +84,8 @@ export class PersonAppService {
     }
 
     const result = response.toolUse.input as unknown as MatchCharactersResult;
-    return result.matched;
+    // Sort by score descending
+    return result.matched.sort((a, b) => b.score - a.score);
   }
 
   private async generateCharacterDetail(

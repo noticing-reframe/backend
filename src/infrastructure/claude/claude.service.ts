@@ -9,8 +9,7 @@ import type {
 } from '../../entity/claude/completion.entity';
 
 const DEFAULT_MODEL = 'claude-3-haiku-20240307';
-const DEFAULT_MAX_TOKENS = 1024;
-const DEFAULT_TEMPERATURE = 0.8;
+const DEFAULT_MAX_TOKENS = 4096;
 
 @Injectable()
 export class ClaudeService implements OnModuleInit {
@@ -29,7 +28,7 @@ export class ClaudeService implements OnModuleInit {
     const response = await this.client.messages.create({
       model: DEFAULT_MODEL,
       max_tokens: request.maxTokens ?? DEFAULT_MAX_TOKENS,
-      temperature: request.temperature ?? DEFAULT_TEMPERATURE,
+      ...(request.temperature !== undefined && { temperature: request.temperature }),
       system: request.system,
       messages: request.messages.map((m) => ({
         role: m.role,
@@ -54,7 +53,7 @@ export class ClaudeService implements OnModuleInit {
     const response = await this.client.messages.create({
       model: DEFAULT_MODEL,
       max_tokens: request.maxTokens ?? DEFAULT_MAX_TOKENS,
-      temperature: request.temperature ?? 0.3,
+      ...(request.temperature !== undefined && { temperature: request.temperature }),
       system: request.system,
       messages: request.messages.map((m) => ({
         role: m.role,
@@ -92,7 +91,7 @@ export class ClaudeService implements OnModuleInit {
     const stream = this.client.messages.stream({
       model: DEFAULT_MODEL,
       max_tokens: request.maxTokens ?? DEFAULT_MAX_TOKENS,
-      temperature: request.temperature ?? DEFAULT_TEMPERATURE,
+      ...(request.temperature !== undefined && { temperature: request.temperature }),
       system: request.system,
       messages: request.messages.map((m) => ({
         role: m.role,

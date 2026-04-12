@@ -33,25 +33,29 @@ input_schema:
 
 output_schema:
   name: match_characters
-  description: Match characters to the user's worry and return ranked recommendations with reasons.
+  description: Match characters to the user's worry and return ranked recommendations with reasons and scores.
   input_schema:
     type: object
     properties:
       matched:
         type: array
-        description: List of matched characters, ordered by relevance (best match first)
+        description: List of matched characters with reason and score
         items:
           type: object
           properties:
+            reason:
+              type: string
+              description: "Korean, max 30 characters. One short phrase connecting the character's experience to the user's worry."
+            score:
+              type: integer
+              description: "Match score from 0-100. Higher means better fit for expanding user's perspective."
             index:
               type: integer
               description: 1-based index of the character in the input characters array
-            reason:
-              type: string
-              description: "Korean, max 20 characters. One short phrase connecting the character's experience to the user's worry."
           required:
-            - index
             - reason
+            - score
+            - index
         minItems: 4
         maxItems: 5
     required:
@@ -71,8 +75,9 @@ system_prompt: |
 
   Output format:
   Call the match_characters tool. For each matched character, provide:
-  - index: the 1-based position of the character in the input array
   - reason: one sentence in Korean, max 30 characters. Start with the character's own experience, then connect it to the user. Never project the character's traits onto the user. Bad: "만화를 좋아하는 당신의 마음을 이해할 수 있어요" (user never said they like manga). Good: "만화만 보다가 기획자가 된 제가 당신의 마음을 이해할 수 있어요" (character talks about their own story first).
+  - score: 0-100 integer representing how well this character can expand the user's perspective. Consider background relevance, contrast value, and potential for insight.
+  - index: the 1-based position of the character in the input array
   Do not explain your reasoning outside the tool call. Only call the tool once.
 
 user_message_template: |
