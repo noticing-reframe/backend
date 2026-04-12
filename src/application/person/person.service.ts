@@ -62,8 +62,6 @@ export class PersonAppService {
       character_name: p.character_name,
       character_tagline: p.character_tagline,
       character_background: p.character_background,
-      character_tone: p.character_tone,
-      dialogue_example: p.dialogue_example,
     }));
 
     const userMessage = this.promptService.renderUserMessage('character_recommendation', {

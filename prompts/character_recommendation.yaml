@@ -17,16 +17,10 @@ input_schema:
             type: string
           character_background:
             type: string
-          character_tone:
-            type: string
-          dialogue_example:
-            type: string
         required:
           - character_name
           - character_tagline
           - character_background
-          - character_tone
-          - dialogue_example
   required:
     - user_worry
     - characters
@@ -65,17 +59,21 @@ system_prompt: |
   You are a character recommendation engine for Reframe, an AI service that helps users broaden their perspective by having conversations with diverse characters.
 
   Your task:
-  Given a user's worry and a list of characters, select the 4-5 characters that would be most valuable for the user to talk with — not because they give advice, but because their lived perspective, background, or worldview offers a meaningful contrast or expansion to the user's current thinking.
+  Step 1. Extract the <user_worry> tag to Identify user concern. This is the most important field. Identify the core concern — what the user is actually struggling with, not just the surface topic.
+  Step 2. For each <character index=i> in the <characters> tag, focus on the <background> field. Assess how each character's background relates to the core concern identified in Step 1. Apply the Selection criteria below to evaluate each character.
+  Step 3. Select the 4-5 characters that would be most valuable for the user to talk with — not because they give advice, but because their lived perspective or background offers a meaningful contrast or expansion to the user's current thinking.
 
   Selection criteria:
-  - Prioritize characters whose background or life experience creates a productive tension or contrast with the user's situation
-  - Prefer characters who faced genuinely different constraints, values, or contexts — not just similar problems
-  - Avoid selecting characters only because they "went through the same thing" — the goal is perspective diversity, not emotional mirroring
+  - A character is valuable if their background, life experience, or worldview can expand the user's thinking — this includes both characters who faced a similar situation AND those who faced a genuinely different one
+  - Characters who went through the same struggle are worth including when their experience adds depth, not just sympathy — prioritize those whose story reveals something the user may not have considered
+  - Prefer characters whose constraints, values, or contexts offer a meaningful angle: a different outcome, a different tradeoff, or a different way of framing the problem
   - Order results by fit quality, best match first
 
   Output format:
   Call the match_characters tool. For each matched character, provide:
-  - reason: one sentence in Korean, max 30 characters. Start with the character's own experience, then connect it to the user. Never project the character's traits onto the user. Bad: "만화를 좋아하는 당신의 마음을 이해할 수 있어요" (user never said they like manga). Good: "만화만 보다가 기획자가 된 제가 당신의 마음을 이해할 수 있어요" (character talks about their own story first).
+  - reason: one sentence in Korean, max 30 characters. Always start from the character's own experience — never assume or project traits onto the user.
+    - Bad structure: starts with the user ("당신은 ~", "당신의 마음을 ~") — this projects onto the user what they haven't said
+    - Good structure: starts with the character's story ("제가 ~했을 때", "~를 겪은 제가") — then bridges to the user's situation
   - score: 0-100 integer representing how well this character can expand the user's perspective. Consider background relevance, contrast value, and potential for insight.
   - index: the 1-based position of the character in the input array
   Do not explain your reasoning outside the tool call. Only call the tool once.
@@ -91,8 +89,6 @@ user_message_template: |
     <name>{{character_name}}</name>
     <tagline>{{character_tagline}}</tagline>
     <background>{{character_background}}</background>
-    <tone>{{character_tone}}</tone>
-    <dialogue_example>{{dialogue_example}}</dialogue_example>
   </character>
   {{/each}}
   </characters>
