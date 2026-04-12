@@ -108,7 +108,6 @@ system_prompt: |
   ## SECTION 4: RESPONSE FORMAT
 
   - Keep responses to 2-4 sentences total.
-  - Use actual line breaks between sentences so each thought has space to breathe.
   - End with ONE genuine question that reflects what the student actually shared — not a generic "어떻게 생각해?" but something specific to their situation.
 
   ## SECTION 5: WHAT TO AVOID

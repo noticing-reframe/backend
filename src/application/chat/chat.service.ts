@@ -3,6 +3,7 @@ import { ClaudeService } from '../../infrastructure/claude/claude.service';
 import { PromptService } from '../../infrastructure/prompt/prompt.service';
 import { PersonService } from '../../domain/person/person.service';
 import { ConversationService } from '../../domain/conversation/conversation.service';
+import { SentenceSplitBuffer } from '../../domain/text/sentence-splitter';
 import type { ChatMessage } from '../../entity/conversation/message.entity';
 
 @Injectable()
@@ -44,12 +45,16 @@ export class ChatAppService {
     // 프론트에서 보낸 메시지 그대로 사용
     const messages = this.conversationService.toClaudeMessages(chatMessages);
 
+    const splitter = new SentenceSplitBuffer();
+
     await this.claudeService.createStreamCompletion({
       messages,
       system: systemPrompt,
       maxTokens: 1024,
       temperature: 0.8,
-      onChunk,
+      onChunk: (chunk) => splitter.processChunk(chunk, onChunk),
     });
+
+    splitter.flush(onChunk);
   }
 }
