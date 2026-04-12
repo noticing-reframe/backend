@@ -1,86 +1,136 @@
-# Backend - Claude Code 협업 가이드
+# Reframe Backend - AI 협업 개발 가이드
 
 ## 프로젝트 개요
-- **프로젝트명**: Reframe
-- **역할**: 실제 인물 기반 가상 캐릭터와 1인칭 대화하는 AI 챗봇 서비스의 백엔드
-- **기술 스택**: Node.js, TypeScript, Express
-- **아키텍처**: 레이어드 아키텍처
 
-## 핵심 비즈니스 컨셉
-- **실제 인물 기반 가상 캐릭터**: 실제 인물의 핵심 속성·철학·경험 패턴을 학습한 가상 캐릭터
-- **1인칭 대화**: 캐릭터가 자기 이야기를 1인칭으로 대화 ("나는 그때…", "내가 제일 무서웠던 건…")
-- **면책**: 캐릭터 카드에 "이 캐릭터는 실제 인물 OO의 철학·인터뷰 데이터를 학습하여 구성되었습니다" 명시
+- **프로젝트명**: Reframe (리프레임)
+- **핵심 컨셉**: 실제 인물 기반 가상 캐릭터("요정")와 1인칭 대화를 통해 사용자의 관점을 확장하는 AI 챗봇 서비스
+- **기술 스택**: NestJS, TypeScript, Claude API (Anthropic)
+- **아키텍처**: 레이어드 아키텍처 (Infrastructure → Domain → Application)
+
+---
+
+## AI 활용 전략
+
+### 사용 도구 및 모델
+
+| 용도 | 도구/모델 | 설명 |
+|------|----------|------|
+| 개발 보조 | Claude Code (CLI) | 코드 생성, 리팩토링, 디버깅 전 과정 |
+| 대화 생성 | Claude API | 캐릭터 매칭, 대화 힌트 생성, 실시간 채팅 |
+| 에디터 | Cursor | AI 기반 코드 편집 |
+| 대화 품질 | claude-3-haiku | 빠른 응답과 비용 효율성 |
+
+### 프롬프트 엔지니어링 전략
+
+1. **캐릭터별 시스템 프롬프트 분리**
+   - 각 캐릭터의 페르소나를 독립 모듈로 관리
+   - `src/data/prompts/*.yaml` 형태로 프롬프트 템플릿화
+   - Handlebars 문법으로 동적 변수 주입
+
+2. **1인칭 화법 가드레일**
+   - 시스템 프롬프트 상단에 필수 규칙 고정
+   - "너는 {character_name}이다. 항상 1인칭으로 자기 이야기를 한다. 조언하지 않는다."
+   - 캐릭터가 절대 AI임을 드러내지 않도록 강제
+
+3. **XML 구조화된 컨텍스트 전달**
+   - LLM에게 구조화된 데이터 전달 시 XML 태그 사용
+   - 파싱 정확도 향상 및 hallucination 감소
+
+4. **토큰 최적화**
+   - 대화 히스토리는 Claude API messages 배열로 직접 전달
+   - 캐릭터 컨텍스트는 시스템 프롬프트에 1회만 포함
+   - 불필요한 반복 제거로 토큰 사용량 최소화
+
+---
+
+## 핵심 비즈니스 로직
+
+### 캐릭터 매칭 시스템
+
+```
+사용자 고민 입력
+    ↓
+[1차 LLM 호출] 10명 중 4-5명 캐릭터 선정 + 매칭 이유 + 점수
+    ↓
+[2차 LLM 호출 x 4-5] 각 캐릭터별 conversation_hint 생성 (병렬 처리)
+    ↓
+점수 기반 정렬 후 반환
+```
+
+### 1인칭 대화 시스템
+
+- **면책 조항**: "이 캐릭터는 실제 인물 OO의 철학·인터뷰 데이터를 학습하여 구성되었습니다"
+- **대화 원칙**:
+  - 캐릭터는 자신의 경험을 1인칭으로 이야기
+  - 조언이나 평가 금지
+  - 반말(casual speech) 사용
+  - 구체적인 에피소드 기반 대화
+
+---
 
 ## 폴더 구조
 
 ```
 src/
-├── index.ts                              # Express 서버 엔트리포인트
-├── infrastructure/                       # 순수 기술 클라이언트 (비즈니스 로직 없음)
-│   └── claude/
-│       ├── interface/
-│       │   └── claude.interface.ts       # API 인터페이스
-│       ├── component/
-│       │   └── claude.client.ts          # Claude API 호출 + 스트리밍
-│       └── claude.module.ts              # 싱글톤 모듈
-├── domain/                               # 비즈니스 모듈 (컴포넌트 단위)
-│   ├── person/
-│   │   ├── person.interface.ts           # Person 타입
-│   │   └── person.repository.ts          # 인물 저장소 + 샘플 데이터
-│   ├── session/
-│   │   ├── session.interface.ts          # Session 타입
-│   │   └── session.repository.ts         # 세션 저장소
-│   └── insight/
-│       ├── insight.interface.ts          # Insight 타입
-│       └── insight.repository.ts         # 인사이트 저장소
-└── application/                          # 유스케이스 (domain 조합)
-    ├── person/
-    │   ├── person.controller.ts
-    │   └── person.service.ts
-    ├── session/
-    │   ├── session.controller.ts
-    │   └── session.service.ts
-    ├── match/
-    │   ├── match.controller.ts
-    │   └── match.service.ts
-    ├── chat/
-    │   ├── chat.controller.ts
-    │   └── chat.service.ts
-    └── insight/
-        ├── insight.controller.ts
-        └── insight.service.ts
+├── app.ts                    # NestJS 앱 엔트리포인트
+├── infrastructure/           # 순수 기술 클라이언트
+│   ├── claude/              # Claude API 연동
+│   │   └── claude.service.ts
+│   └── prompt/              # 프롬프트 템플릿 관리
+│       └── prompt.service.ts
+├── domain/                   # 비즈니스 모듈
+│   ├── person/              # 캐릭터 데이터 관리
+│   └── session/             # 세션 관리
+├── application/              # 유스케이스 (API 엔드포인트)
+│   ├── person/              # 캐릭터 조회/매칭
+│   ├── chat/                # 실시간 채팅 (SSE)
+│   └── session/             # 세션 생성/관리
+├── entity/                   # 타입 정의
+└── data/
+    ├── persons.json         # 캐릭터 데이터
+    └── prompts/             # 프롬프트 템플릿 (YAML)
+        ├── character_recommendation.yaml
+        ├── character_generation.yaml
+        └── character_conversation.yaml
 ```
 
-## 레이어 의존성 규칙
-```
-application → domain → infrastructure
-```
-- `infrastructure`: 순수 기술 클라이언트 (Claude API 등) - 비즈니스 로직 없음
-- `domain`: 비즈니스 모듈, infrastructure를 사용하여 구현
-- `application`: domain을 조합하여 유스케이스 구현 (controller + service)
+---
 
-## infrastructure 모듈 구조
-```
-infrastructure/{모듈명}/
-├── interface/
-│   └── {모듈명}.interface.ts    # 인터페이스 정의
-├── component/
-│   └── {모듈명}.client.ts       # 기술 클라이언트
-└── {모듈명}.module.ts           # 싱글톤 모듈
-```
+## 프롬프트 템플릿 구조
 
-## 코딩 컨벤션
-- **클래스 기반**: 모든 모듈은 클래스로 작성
-- **파일 네이밍**:
-  - `xxx.controller.ts` - 컨트롤러
-  - `xxx.service.ts` - 서비스
-  - `xxx.client.ts` - 기술 클라이언트
-  - `xxx.interface.ts` - 인터페이스
-  - `xxx.module.ts` - 모듈
-  - `xxx.entity.ts` - 엔티티
-  - `xxx.repository.ts` - 리포지토리
+### character_recommendation.yaml
+- **목적**: 사용자 고민에 맞는 캐릭터 4-5명 선정
+- **선정 기준**: 관점 다양성 (perspective diversity), 비슷한 경험보다 대비되는 배경 우선
+- **출력**: reason(30자 이내), score(0-100), index
 
-## 주요 명령어
+### character_generation.yaml
+- **목적**: 선정된 캐릭터별 conversation_hint 생성
+- **출력**: 2-3문장의 대화 힌트 (캐릭터가 사용자와 나누고 싶은 대화)
+
+### character_conversation.yaml
+- **목적**: 실시간 1인칭 대화 생성
+- **특징**:
+  - 시스템 프롬프트에 캐릭터 전체 컨텍스트 포함
+  - 섹션별로 명확히 구분 (WHO YOU ARE, CHARACTER BACKGROUND, etc.)
+  - 강력한 가드레일 (반말 강제, AI 언급 금지, 결론/교훈 금지)
+
+---
+
+## API 엔드포인트
+
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | /health | 헬스 체크 |
+| GET | /api/persons | 전체 캐릭터 조회 |
+| GET | /api/persons/:id | 캐릭터 상세 조회 |
+| POST | /api/persons/match | 고민 기반 캐릭터 매칭 (Claude AI) |
+| POST | /api/sessions | 세션 생성 |
+| POST | /api/chat | 스트리밍 채팅 (SSE) |
+
+---
+
+## 개발 명령어
+
 ```bash
 npm run dev      # 개발 서버 (tsx watch)
 npm run build    # TypeScript 빌드
@@ -88,41 +138,27 @@ npm run start    # 프로덕션 실행
 npm run test     # 테스트 (vitest)
 ```
 
+---
+
 ## 환경 변수
-```
+
+```env
 ANTHROPIC_API_KEY=sk-ant-...
 PORT=4000
 ```
 
-## API 엔드포인트
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| GET | /health | 헬스 체크 |
-| GET | /api/persons | 전체 인물 조회 |
-| GET | /api/persons/:id | 인물 상세 조회 |
-| POST | /api/sessions | 세션 생성 |
-| POST | /api/match | 인물 매칭 (Claude AI) |
-| POST | /api/chat | 스트리밍 채팅 (SSE) |
-| POST | /api/insights | 인사이트 저장 |
-| GET | /api/insights/user/:userId | 유저 인사이트 조회 |
+---
 
-## 현재 개발 상태
-- [x] 프로젝트 초기 설정
-- [x] 폴더 구조 구성
-- [x] Express 서버 설정
-- [x] Claude API 모듈 (+ 스트리밍)
-- [x] domain 비즈니스 모듈 구현 (person, session, insight)
-- [x] 핵심 기능 구현 (매칭, 채팅, 인사이트)
-- [ ] 데이터베이스 연동
-- [ ] 인물 데이터 확장
-
-## AI 협업 문서화
+## AI 협업 문서 구조
 
 ```
 docs/
-├── ai-sessions/   # AI와의 세션별 대화 기록
-├── prompts/       # 재사용 가능한 프롬프트 모음
-└── decisions/     # AI 협업으로 내린 기술 결정 (ADR)
+├── ai-sessions/      # AI와의 세션별 대화 기록
+├── api/              # API 명세서
+├── architecture/     # 아키텍처 설계 문서
+├── decisions/        # 기술 결정 기록 (ADR)
+├── features/         # 기능 명세서
+└── prompts/          # 프롬프트 설계 문서
 ```
 
-**커밋할 때마다 docs 업데이트 필수**
+**모든 주요 개발 결정은 AI와의 협업을 통해 이루어졌으며, 해당 과정이 docs/에 기록되어 있습니다.**
